@@ -126,7 +126,17 @@ class OllamaServer:
         #send_log(f"Change: {change.text}", change.range.start.line, change.range.start.character, params.text_document.uri)
 
         lines = self.server.workspace.get_text_document(params.text_document.uri).lines
-        line = lines[change.range.start.line][change.range.start.character + 1:]
+        if not hasattr(change, "range") or change.range is None:
+            return
+
+        if change.range.start.line >= len(lines):
+            return
+
+        current_line = lines[change.range.start.line]
+        if change.range.start.character >= len(current_line):
+            line = ""
+        else:
+            line = current_line[change.range.start.character + 1:]
         contains_non_whitespace = bool(re.search(r'[^\s]', line))
 
         if contains_non_whitespace:
@@ -182,5 +192,4 @@ class OllamaServer:
 if __name__ == "__main__":
     server = OllamaServer()
     server.start()
-
 
